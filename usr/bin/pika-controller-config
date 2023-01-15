@@ -43,7 +43,7 @@ remove_drivers() {
 
 internet_check
 
-if sudo apt list --installed | grep xone-dkms
+if sudo dpkg -s xone-dkms
 then
   zenity --question\
     --title="Xbox One Controller setup" \
