@@ -1,14 +1,8 @@
-# Sign the packages
-dpkg-sig --sign builder ./output/pika-controller-config*.deb
+# send debs to server
+rsync -azP --include './' --include '*.deb' --exclude '*' ./output/ ferreo@direct.pika-os.com:/srv/www/incoming/
 
-# Pull down existing ppa repo db files etc
-rsync -azP --exclude '*.deb' ferreo@direct.pika-os.com:/srv/www/pikappa/ ./output/repo
+# add debs to repo
+ssh ferreo@direct.pika-os.com 'aptly repo add -force-replace -remove-files pika-main /srv/www/incoming/'
 
-# Remove our existing package from the repo
-reprepro -C main -V --basedir ./output/repo/ removefilter lunar 'Package (% pika-controller-config*)'
-
-# Add the new package to the repo
-reprepro -C main -V --basedir ./output/repo/ includedeb lunar ./output/pika-controller-config*.deb
-
-# Push the updated ppa repo to the server
-rsync -azP ./output/repo/ ferreo@direct.pika-os.com:/srv/www/pikappa/
+# publish the repo
+ssh ferreo@direct.pika-os.com 'aptly publish update -batch -skip-contents -force-overwrite lunar filesystem:pikarepo:'
